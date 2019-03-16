@@ -18,7 +18,9 @@ function init(){
         saveFile.innerHTML = "保存";
         saveFile.download = "webRequestBlock.json";
         saveFile.href = URL.createObjectURL(blob);
+        document.body.appendChild(saveFile);
         saveFile.click();
+        document.body.removeChild(saveFile);
     });
     document.getElementById("savedata").appendChild(saveElement)
     // save button }}}
