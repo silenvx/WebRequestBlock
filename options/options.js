@@ -9,7 +9,6 @@ function init(){
     var blockList = savedata["blockList"];
     // trash remove
     for(var i=0,d=0,l=blockList.length;i<l;i++){
-        console.log(blockList);
         if((blockList[i-d]["flag"] & bgPage.FLAG_EACH.TRASH) !=0){
             bgPage.removeBlockEvent(i-d);
             blockList.splice(i-d,1);
@@ -50,14 +49,23 @@ function init(){
         reader.readAsText(file[0]);
 
         reader.onload = function(e){
+            var savedata = JSON.parse(localStorage.getItem("savedata"));
             for(var i=0;i<blockList.length;i++){
                 bgPage.removeBlockEvent(i);
             }
             savedata = JSON.parse(reader.result);
-            blockList = savedata["blockList"]
-            localStorage.setItem("savedata", JSON.stringify(savedata));
-            bgPage.init();
-            refreshList(blockList);
+            if((typeof(savedata["name"]) != "undefined") && (savedata["name"] == "WebRequestBlock")){
+                blockList = savedata["blockList"]
+                localStorage.setItem("savedata", JSON.stringify(savedata));
+                bgPage.init();
+                refreshList(blockList);
+            }else{
+                savedata = JSON.parse(localStorage.getItem("savedata"));
+                blockList = savedata["blockList"]
+                bgPage.init();
+                refreshList(blockList);
+                console.log("load file error");
+            }
         }
     });
     var loadElement= document.createElement("div");

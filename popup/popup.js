@@ -42,12 +42,12 @@ function init(details){
     toggleAll["toggle"]["cell"].appendChild(toggleAll["toggle"]["input"]);
     toggleAll["toggle"]["cell"].appendChild(toggleAll["toggle"]["label"]);
 
-    toggleAll["toggle"]["input"].checked = savedata["options"]["toggleAll"];
+    toggleAll["toggle"]["input"].checked = ((savedata["options"]["flag"] & bgPage.FLAG_ALL.VALID) !=0);
     toggleAll["toggle"]["input"].addEventListener("click", function (){
         var savedata = JSON.parse(localStorage.getItem("savedata"));
-        savedata["options"]["toggleAll"] = toggleAll["toggle"]["input"].checked;
+        //XXX:prototype shift
+        savedata["options"]["flag"] = (savedata["options"]["flag"] & ~bgPage.FLAG_ALL.VALID) | toggleAll["toggle"]["input"].checked;
         localStorage.setItem("savedata", JSON.stringify(savedata));
-        toggleAll["text"].innerHTML = "WebRequestBlockを" + (toggleAll["toggle"]["input"].checked?"無効":"有効") + "にする";
         bgPage.currentTabActiveIcon();
     });
 

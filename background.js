@@ -15,8 +15,11 @@ function init(){
     if(savedata == null){
         savedata = {options:{}, blockList:[]};
     }
+    if(typeof(savedata["name"]) == "undefined"){
+        savedata["name"] = "WebRequestBlock";
+    }
     if(typeof(savedata["options"]["flag"]) == "undefined"){
-        savedata["options"]["flag"] = 1;
+        savedata["options"]["flag"] = FLAG_ALL.VALID;
     }
     localStorage.setItem("savedata", JSON.stringify(savedata));
     var blockList = savedata["blockList"];
