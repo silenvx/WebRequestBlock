@@ -1,9 +1,18 @@
 var bgPage = chrome.extension.getBackgroundPage();
 
 function init(){
-    var blockList = JSON.parse(localStorage.getItem("blockList"));
-    if(blockList == null){
-        blockList = [];
+    var savedata = JSON.parse(localStorage.getItem("savedata"));
+    if(savedata == null){
+        savedata = {options:{}, blockList:[]};
+    }
+    var blockList = savedata["blockList"];
+    // trash remove
+    for(var i=0;i<blockList.length;i++){
+        if((blockList[i]["flag"] & bgPage.FLAG_EACH.TRASH) !=0){
+            bgPage.removeBlockEvent(i);
+            blockList.splice(i,1);
+        }
+        bgPage.blockListUpdate(blockList);
     }
 
     initList(blockList);
@@ -12,7 +21,7 @@ function init(){
     saveElement.setAttribute("id", "saveButton");
     saveElement.innerHTML = "保存";
     saveElement.addEventListener("click", function (){
-        var blob = new Blob([localStorage.getItem("blockList")],{type: "application\/json"});
+        var blob = new Blob([localStorage.getItem("savedata")],{type: "application\/json"});
         var saveFile= document.createElement("a");
         saveFile.setAttribute("id", "saveFile");
         saveFile.innerHTML = "保存";
@@ -22,7 +31,7 @@ function init(){
         saveFile.click();
         document.body.removeChild(saveFile);
     });
-    document.getElementById("savedata").appendChild(saveElement)
+    document.getElementById("configure").appendChild(saveElement)
     // save button }}}
     // load button {{{
     var loadFile = document.createElement("input");
@@ -40,8 +49,9 @@ function init(){
             for(var i=0;i<blockList.length;i++){
                 bgPage.removeBlockEvent(i);
             }
-            blockList = JSON.parse(reader.result);
-            localStorage.setItem("blockList", JSON.stringify(blockList));
+            savedata = JSON.parse(reader.result);
+            blockList = savedata["blockList"]
+            localStorage.setItem("savedata", JSON.stringify(savedata));
             bgPage.init();
             refreshList(blockList);
         }
@@ -52,13 +62,14 @@ function init(){
     loadElement.addEventListener("click", function (){
         loadFile.click();
     });
-    document.getElementById("savedata").appendChild(loadElement)
+    document.getElementById("configure").appendChild(loadElement)
     // load button }}}
 }
 
 function initList(blockList){
-    list_title = ["切替", "番号", "対象のURL", "拒否するURL", "操作"];
-    list_title_question = ["", "", "https://developer.mozilla.org/ja/docs/Web/JavaScript/Guide/Regular_Expressions", "https://developer.mozilla.org/ja/docs/Mozilla/Add-ons/WebExtensions/Match_patterns", ""];
+    var savedata = JSON.parse(localStorage.getItem("savedata"));
+    var list_title = ["", "番号", "対象のURL", "拒否するURL", "操作"];
+    var list_title_question = ["", "", "https://developer.mozilla.org/ja/docs/Web/JavaScript/Guide/Regular_Expressions", "https://developer.mozilla.org/ja/docs/Mozilla/Add-ons/WebExtensions/Match_patterns", ""];
     var listTable = document.createElement("table");
     listTable.setAttribute("id", "listTable");
     var main = document.getElementById("main");
@@ -66,34 +77,63 @@ function initList(blockList){
 
     // table head {{{
     var list_head = listTable.createTHead();
-    var row = list_head.insertRow(-1);
+    var tdHead = {};
+    tdHead["row"] = list_head.insertRow(-1);
     // cbxAll{{{
-    var cell = row.insertCell(-1);
-    var input = document.createElement("input");
-    input.setAttribute("type", "checkbox");
-    input.setAttribute("id", "cbxAll");
-    input.setAttribute("name", "cbxAll");
-    input.setAttribute("value", "1");
+    tdHead["cbxAll"] = {};
+    tdHead["cbxAll"]["cell"] = tdHead["row"].insertCell(-1);
+    tdHead["cbxAll"]["input"] = document.createElement("input");
+    tdHead["cbxAll"]["input"].setAttribute("type", "checkbox");
+    tdHead["cbxAll"]["input"].setAttribute("id", "cbxAll");
+    tdHead["cbxAll"]["input"].setAttribute("name", "cbxAll");
+    tdHead["cbxAll"]["input"].setAttribute("value", "1");
 
-    cell.appendChild(input);
-    input.addEventListener("click", function (){
+    tdHead["cbxAll"]["cell"].appendChild(tdHead["cbxAll"]["input"]);
+    tdHead["cbxAll"]["input"].addEventListener("click", function (){
         var cbxList = document.getElementsByClassName("cbxList");
         for(var i=0;i<cbxList.length;i++){
             cbxList[i].checked = document.getElementById("cbxAll").checked;
         }
     });
     // cbxAll}}}
-    for(var i=0;i<list_title.length;i++){
-        var cell = row.insertCell(-1);
-        cell.appendChild(document.createTextNode(list_title[i]));
+    // toggle All {{{
+    tdHead["toggle"] = {};
+    tdHead["toggle"]["cell"] = tdHead["row"].insertCell(-1);
+    tdHead["toggle"]["input"] = document.createElement("input");
+    tdHead["toggle"]["input"].setAttribute("type", "checkbox");
+    tdHead["toggle"]["input"].setAttribute("id", "toggleAll");
+    tdHead["toggle"]["input"].setAttribute("class", "toggle");
+    tdHead["toggle"]["input"].setAttribute("name", "toggleAll");
+    tdHead["toggle"]["input"].setAttribute("value", "1");
+
+    tdHead["toggle"]["label"] = document.createElement("label");
+    tdHead["toggle"]["label"].htmlFor = "toggleAll";
+
+    tdHead["toggle"]["cell"].appendChild(tdHead["toggle"]["input"]);
+    tdHead["toggle"]["cell"].appendChild(tdHead["toggle"]["label"]);
+
+    tdHead["toggle"]["input"].checked = savedata["options"]["toggleAll"];
+    tdHead["toggle"]["input"].addEventListener("click", function (){
+        var savedata = JSON.parse(localStorage.getItem("savedata"));
+        savedata["options"]["toggleAll"] = tdHead["toggle"]["input"].checked;
+        localStorage.setItem("savedata", JSON.stringify(savedata));
+        bgPage.currentTabActiveIcon();
+    });
+    // toggle All }}}
+
+    var questionLink = [];
+    for(var i=1;i<list_title.length;i++){
+        questionLink[i] = {};
+        questionLink[i]["cell"] = tdHead["row"].insertCell(-1);
+        questionLink[i]["cell"].appendChild(document.createTextNode(list_title[i]));
         if(list_title_question[i] != ""){
-            questionLink = document.createElement("a");
-            questionLink.href = list_title_question[i];
-            questionLink.target = "_blank";
-            questionLinkImage = document.createElement("img");
-            questionLinkImage.src = "question.png";
-            questionLink.appendChild(questionLinkImage);
-            cell.appendChild(questionLink);
+            questionLink[i]["a"] = document.createElement("a");
+            questionLink[i]["a"].href = list_title_question[i];
+            questionLink[i]["a"].target = "_blank";
+            questionLink[i]["image"] = document.createElement("img");
+            questionLink[i]["image"].src = "question.png";
+            questionLink[i]["a"].appendChild(questionLink[i]["image"]);
+            questionLink[i]["cell"].appendChild(questionLink[i]["a"]);
 
         }
     }
@@ -101,39 +141,43 @@ function initList(blockList){
     // table body {{{
     var list_body = listTable.createTBody();
     // add area {{{
-    var row = list_body.insertRow(-1);
-    row.setAttribute("class", "listAdd");
+    var tdAdd = {};
+    tdAdd["row"] = list_body.insertRow(-1);
+    tdAdd["row"].setAttribute("class", "listAdd");
     for(var i=0;i<list_title.length+1;i++){
-        row.insertCell(-1);
+        tdAdd["row"].insertCell(-1);
     }
     const CARDINAL_SKIP = 3;
-    var cell = row.cells[CARDINAL_SKIP + 0];
-    var input = document.createElement("input");
-    input.setAttribute("type", "textarea");
-    input.setAttribute("id", "srcUrl");
-    input.setAttribute("placeholder", "対象のURLを入力する");
-    cell.appendChild(input);
+    tdAdd["src"] = {};
+    tdAdd["src"]["cell"] = tdAdd["row"].cells[CARDINAL_SKIP + 0];
+    tdAdd["src"]["input"] = document.createElement("input");
+    tdAdd["src"]["input"].setAttribute("type", "textarea");
+    tdAdd["src"]["input"].setAttribute("id", "srcUrl");
+    tdAdd["src"]["input"].setAttribute("placeholder", "対象のURLを入力する");
+    tdAdd["src"]["cell"].appendChild(tdAdd["src"]["input"]);
 
-    var cell = row.cells[CARDINAL_SKIP + 1];
-    var input = document.createElement("input");
-    input.setAttribute("type", "textarea");
-    input.setAttribute("id", "destUrl");
-    input.setAttribute("placeholder", "拒否するURLを入力する");
-    cell.appendChild(input);
+    tdAdd["dest"] = {};
+    tdAdd["dest"]["cell"] = tdAdd["row"].cells[CARDINAL_SKIP + 1];
+    tdAdd["dest"]["input"] = document.createElement("input");
+    tdAdd["dest"]["input"].setAttribute("type", "textarea");
+    tdAdd["dest"]["input"].setAttribute("id", "destUrl");
+    tdAdd["dest"]["input"].setAttribute("placeholder", "拒否するURLを入力する");
+    tdAdd["dest"]["cell"].appendChild(tdAdd["dest"]["input"]);
 
-    var cell = row.cells[CARDINAL_SKIP + 2];
-    var input = document.createElement("input");
-    input.setAttribute("type", "image");
-    input.setAttribute("src", "add.png");
-    input.setAttribute("id", "addList");
-    cell.appendChild(input);
-    input.addEventListener("click", function (){
+    tdAdd["add"] = {};
+    tdAdd["add"]["cell"] = tdAdd["row"].cells[CARDINAL_SKIP + 2];
+    tdAdd["add"]["input"] = document.createElement("input");
+    tdAdd["add"]["input"].setAttribute("type", "image");
+    tdAdd["add"]["input"].setAttribute("src", "add.png");
+    tdAdd["add"]["input"].setAttribute("id", "addList");
+    tdAdd["add"]["cell"].appendChild(tdAdd["add"]["input"]);
+    tdAdd["add"]["input"].addEventListener("click", function (){
         var src = document.getElementById("srcUrl").value;
         var dest = document.getElementById("destUrl").value;
         document.getElementById("srcUrl").value = "";
         document.getElementById("destUrl").value = "";
-        blockList.unshift({toggle:true, src:src, dest:dest})
-        localStorage.setItem("blockList", JSON.stringify(blockList));
+        blockList.unshift({flag:bgPage.FLAG_EACH.VALID, src:src, dest:dest})
+        bgPage.blockListUpdate(blockList);
         bgPage.addBlockEvent(blockList.length-1);
         refreshList(blockList);
     });
@@ -148,65 +192,79 @@ function refreshList(blockList){
         listTable.deleteRow(2);
     }
     // added list {{{
+    var tdList = [];
     for(var i=0;i<blockList.length;i++){
-        var row = listTable.insertRow(-1);
-        if(i%2){
-            row.setAttribute("class", "odd");
-        }else{
-            row.setAttribute("class", "even");
-        }
+        tdList[i] = {};
+        tdList[i]["row"] = listTable.insertRow(-1);
         // checkbox {{{
-        var cell = row.insertCell(-1);
-        var input = document.createElement("input");
-        input.setAttribute("type", "checkbox");
-        input.setAttribute("id", "cbx" + i);
-        input.setAttribute("class", "cbxList");
-        input.setAttribute("name", "cbx" + i);
-        input.setAttribute("value", "1");
+        tdList[i]["cbx"] = {};
+        tdList[i]["cbx"]["cell"] = tdList[i]["row"].insertCell(-1);
+        tdList[i]["cbx"]["input"] = document.createElement("input");
+        tdList[i]["cbx"]["input"].setAttribute("type", "checkbox");
+        tdList[i]["cbx"]["input"].setAttribute("id", "cbx" + i);
+        tdList[i]["cbx"]["input"].setAttribute("class", "cbxList");
+        tdList[i]["cbx"]["input"].setAttribute("name", "cbx" + i);
+        tdList[i]["cbx"]["input"].setAttribute("value", "1");
 
-        cell.appendChild(input);
+        tdList[i]["cbx"]["cell"].appendChild(tdList[i]["cbx"]["input"]);
 
         // checkbox }}}
         // toggle switch {{{
-        var cell = row.insertCell(-1);
-        var input = document.createElement("input");
-        input.setAttribute("type", "checkbox");
-        input.setAttribute("id", "toggle" + i);
-        input.setAttribute("class", "toggle");
-        input.setAttribute("name", "toggle" + i);
-        input.setAttribute("value", "1");
+        tdList[i]["toggle"] = {};
+        tdList[i]["toggle"]["cell"] = tdList[i]["row"].insertCell(-1);
+        tdList[i]["toggle"]["input"] = document.createElement("input");
+        tdList[i]["toggle"]["input"].setAttribute("type", "checkbox");
+        tdList[i]["toggle"]["input"].setAttribute("id", "toggle" + i);
+        tdList[i]["toggle"]["input"].setAttribute("class", "toggle");
+        tdList[i]["toggle"]["input"].setAttribute("name", "toggle" + i);
+        tdList[i]["toggle"]["input"].setAttribute("value", "1");
 
-        var label = document.createElement("label");
-        label.htmlFor = "toggle" + i;
+        tdList[i]["toggle"]["label"] = document.createElement("label");
+        tdList[i]["toggle"]["label"].htmlFor = "toggle" + i;
 
-        cell.appendChild(input);
-        cell.appendChild(label);
+        tdList[i]["toggle"]["cell"].appendChild(tdList[i]["toggle"]["input"]);
+        tdList[i]["toggle"]["cell"].appendChild(tdList[i]["toggle"]["label"]);
 
-        input.checked = blockList[i]["toggle"];
+        tdList[i]["toggle"]["input"].checked = (blockList[i]["flag"] & bgPage.FLAG_EACH.VALID) != 0;
         (function (i,input){
-            input.addEventListener("click", function (){
-                blockList[i]["toggle"] = input.checked;
-                localStorage.setItem("blockList", JSON.stringify(blockList));
+            tdList[i]["toggle"]["input"].addEventListener("click", function (){
+                blockList[i]["flag"] |= input.checked;
+                bgPage.blockListUpdate(blockList);
                 bgPage.toggleBlockEvent(i);
             });
-        })(i,input);
+        })(i,tdList[i]["toggle"]["input"]);
         // toggle switch }}}
-        row.insertCell(-1).appendChild(document.createTextNode(i));
-        row.insertCell(-1).appendChild(document.createTextNode(blockList[i]["src"]));
-        row.insertCell(-1).appendChild(document.createTextNode(blockList[i]["dest"]));
+        tdList[i]["row"].insertCell(-1).appendChild(document.createTextNode(i));
+        tdList[i]["row"].insertCell(-1).appendChild(document.createTextNode(blockList[i]["src"]));
+        tdList[i]["row"].insertCell(-1).appendChild(document.createTextNode(blockList[i]["dest"]));
         // operations {{{
-        var cell = row.insertCell(-1);
+        tdList[i]["op"] = {};
+        tdList[i]["op"]["cell"] = tdList[i]["row"].insertCell(-1);
         // trash {{{
-        var input = document.createElement("input");
-        input.setAttribute("type", "image");
-        input.setAttribute("src", "trash.png");
-        input.setAttribute("id", "delList");
-        cell.appendChild(input);
+        tdList[i]["op"]["input"] = document.createElement("input");
+        tdList[i]["op"]["input"].setAttribute("type", "image");
+        tdList[i]["op"]["input"].setAttribute("src", "trash.png");
+        tdList[i]["op"]["input"].setAttribute("id", "delList");
+        if((blockList[i]["flag"] & bgPage.FLAG_EACH.TRASH) == 0){
+            tdList[i]["op"]["input"].setAttribute("src", "trash.png");
+            tdList[i]["row"].setAttribute("style", "color:#000;");
+            console.log("bla");
+        }else{
+            tdList[i]["op"]["input"].setAttribute("src", "back.png");
+            tdList[i]["row"].setAttribute("style", "color:#ccc;");
+            console.log("grey");
+        }
+        tdList[i]["op"]["cell"].appendChild(tdList[i]["op"]["input"]);
         (function (i){
-            input.addEventListener("click", function (){
+            tdList[i]["op"]["input"].addEventListener("click", function (){
+                /*
                 bgPage.removeBlockEvent(i);
                 blockList.splice(i,1);
-                localStorage.setItem("blockList", JSON.stringify(blockList));
+                */
+                var savedata = JSON.parse(localStorage.getItem("savedata"));
+                var blockList = savedata["blockList"];
+                blockList[i]["flag"] ^= bgPage.FLAG_EACH.TRASH;
+                bgPage.blockListUpdate(blockList);
                 refreshList(blockList);
             });
         })(i);

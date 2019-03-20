@@ -26,11 +26,11 @@ tr {
     border-bottom:solid 1px #ddd;
 }
 
-tr.odd, tr.listAdd{
-    background-color:#fff;
+tr:nth-child(2n){
+    background-color:#eee;
 }
 
-tr.even, thead{
+thead {
     background-color:#eee;
 }
 
@@ -84,7 +84,7 @@ input:checked +label:after{
 #title{
     padding:1em;
 }
-#savedata {
+#configure{
     margin-left:auto;
 }
 #saveButton, #loadButton {

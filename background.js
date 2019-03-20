@@ -1,10 +1,22 @@
-chrome.browserAction.setBadgeBackgroundColor({color:[217,102,102,1]});
 var listEvent = [];
+var FLAG_EACH = {
+    "VALID": 1<<0,
+    "TRASH": 1<<1
+};
 init();
 
 function init(){
-    var blockList = JSON.parse(localStorage.getItem("blockList"));
-    if(blockList != null){
+    chrome.browserAction.setBadgeBackgroundColor({color:[217,102,102,1]});
+    var savedata = JSON.parse(localStorage.getItem("savedata"));
+    if(savedata == null){
+        savedata = {options:{}, blockList:[]};
+    }
+    if(typeof(savedata["options"]["toggleAll"]) == "undefined"){
+        savedata["options"]["toggleAll"] = true;
+    }
+    localStorage.setItem("savedata", JSON.stringify(savedata));
+    var blockList = savedata["blockList"];
+    if(0 < Object.keys(blockList).length){
         for(var i=0;i<blockList.length;i++){
             addBlockEvent(i);
         }
@@ -12,23 +24,30 @@ function init(){
 }
 // block listをイベントに追加する処理 {{{
 function addBlockEvent(i){
-    var blockList = JSON.parse(localStorage.getItem("blockList"));
+    var savedata= JSON.parse(localStorage.getItem("savedata"));
+    var blockList = savedata["blockList"];
     if(blockList != null){
         (function (i){
             listEvent[i] = function (details){
-                var srcUrl = new RegExp(blockList[i]["src"]);
-                if(srcUrl.test(tabs[details.tabId].url)){
-                    if(blockList[i]["toggle"]){
-                        chrome.browserAction.getBadgeText({tabId:details.tabId}, function(badge){
-                            if(isNaN(badge)){
-                                badge=0;
-                            }else{
-                                badge++;
-                            }
-                            chrome.browserAction.setBadgeText({text:badge.toString(), tabId:details.tabId});
-                        });
+                var savedata= JSON.parse(localStorage.getItem("savedata"));
+                var blockList = savedata["blockList"];
+                if((savedata["options"]["toggleAll"] == true) && ((blockList[i]["flag"] & FLAG_EACH.TRASH) == 0)){
+                    var srcUrl = new RegExp(blockList[i]["src"]);
+                    if(srcUrl.test(tabs[details.tabId].url)){
+                        if((blockList[i]["flag"] & FLAG_EACH.VALID) != 0){
+                            chrome.browserAction.getBadgeText({tabId:details.tabId}, function(badge){
+                                if(isNaN(badge)){
+                                    badge=0;
+                                }else{
+                                    badge++;
+                                }
+                                chrome.browserAction.setBadgeText({text:badge.toString(), tabId:details.tabId});
+                            });
+                        }
+                        return { cancel: (blockList[i]["flag"] & FLAG_EACH.VALID) !=0}
                     }
-                    return { cancel: blockList[i]["toggle"]}
+                }else{
+                    return {};
                 }
             };
             chrome.webRequest.onBeforeRequest.addListener(
@@ -84,18 +103,30 @@ function currentTabActiveIcon(){
     chrome.tabs.query({active:true}, function(tabsActive){
         for(var j=0;j<tabsActive.length;j++){
             var fBlock = false;
-            var blockList = JSON.parse(localStorage.getItem("blockList"));
-            if(blockList != null){
-                for(var i=0;i<blockList.length;i++){
-                    var srcUrl = new RegExp(blockList[i]["src"]);
-                    if(srcUrl.test(tabsActive[j].url) && blockList[i]["toggle"] == true){
-                        fBlock = true;
+            var savedata = JSON.parse(localStorage.getItem("savedata"));
+            if(savedata["options"]["toggleAll"] == true){
+                var blockList = savedata["blockList"];
+                if(blockList != null){
+                    for(var i=0;i<blockList.length;i++){
+                        var srcUrl = new RegExp(blockList[i]["src"]);
+                        if(srcUrl.test(tabsActive[j].url) && (blockList[i]["flag"] & FLAG_EACH.VALID) !=0){
+                            fBlock = true;
+                        }
                     }
                 }
-                chrome.browserAction.setIcon({tabId:tabsActive[j].id, path:fBlock?"true.png":"false.png"});
             }
+            chrome.browserAction.setIcon({tabId:tabsActive[j].id, path:fBlock?"true.png":"false.png"});
         }
     });
 }
 // 現在のタブのurlがリストにある場合browserActionのiconを書き換える }}}
+
+function blockListUpdate(blockList){
+    var savedata = JSON.parse(localStorage.getItem("savedata"));
+    if(savedata == null){
+        savedata = {options:{}, blockList:[]};
+    }
+    savedata["blockList"] = blockList;
+    localStorage.setItem("savedata", JSON.stringify(savedata));
+}
 /* vim: set foldmethod=marker: */
