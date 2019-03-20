@@ -3,6 +3,10 @@ var FLAG_EACH = {
     "VALID": 1<<0,
     "TRASH": 1<<1
 };
+var FLAG_ALL = {
+    "VALID": 1<<0,
+    "TRASH": 1<<1
+};
 init();
 
 function init(){
@@ -11,8 +15,8 @@ function init(){
     if(savedata == null){
         savedata = {options:{}, blockList:[]};
     }
-    if(typeof(savedata["options"]["toggleAll"]) == "undefined"){
-        savedata["options"]["toggleAll"] = true;
+    if(typeof(savedata["options"]["flag"]) == "undefined"){
+        savedata["options"]["flag"] = 1;
     }
     localStorage.setItem("savedata", JSON.stringify(savedata));
     var blockList = savedata["blockList"];
@@ -31,7 +35,7 @@ function addBlockEvent(i){
             listEvent[i] = function (details){
                 var savedata= JSON.parse(localStorage.getItem("savedata"));
                 var blockList = savedata["blockList"];
-                if((savedata["options"]["toggleAll"] == true) && ((blockList[i]["flag"] & FLAG_EACH.TRASH) == 0)){
+                if(((savedata["options"]["flag"] & FLAG_ALL.VALID) != 0) && ((blockList[i]["flag"] & FLAG_EACH.TRASH) == 0)){
                     var srcUrl = new RegExp(blockList[i]["src"]);
                     if(srcUrl.test(tabs[details.tabId].url)){
                         if((blockList[i]["flag"] & FLAG_EACH.VALID) != 0){

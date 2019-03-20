@@ -5,15 +5,19 @@ function init(){
     if(savedata == null){
         savedata = {options:{}, blockList:[]};
     }
+    savedata["options"]["flag"] &= ~bgPage.FLAG_ALL.TRASH;
     var blockList = savedata["blockList"];
     // trash remove
-    for(var i=0;i<blockList.length;i++){
-        if((blockList[i]["flag"] & bgPage.FLAG_EACH.TRASH) !=0){
-            bgPage.removeBlockEvent(i);
-            blockList.splice(i,1);
+    for(var i=0,d=0,l=blockList.length;i<l;i++){
+        console.log(blockList);
+        if((blockList[i-d]["flag"] & bgPage.FLAG_EACH.TRASH) !=0){
+            bgPage.removeBlockEvent(i-d);
+            blockList.splice(i-d,1);
+            d++;
         }
         bgPage.blockListUpdate(blockList);
     }
+    localStorage.setItem("savedata", JSON.stringify(savedata));
 
     initList(blockList);
     // save button {{{
@@ -68,7 +72,7 @@ function init(){
 
 function initList(blockList){
     var savedata = JSON.parse(localStorage.getItem("savedata"));
-    var list_title = ["", "番号", "対象のURL", "拒否するURL", "操作"];
+    var list_title = ["切替", "番号", "対象のURL", "拒否するURL", "操作"];
     var list_title_question = ["", "", "https://developer.mozilla.org/ja/docs/Web/JavaScript/Guide/Regular_Expressions", "https://developer.mozilla.org/ja/docs/Mozilla/Add-ons/WebExtensions/Match_patterns", ""];
     var listTable = document.createElement("table");
     listTable.setAttribute("id", "listTable");
@@ -96,33 +100,9 @@ function initList(blockList){
         }
     });
     // cbxAll}}}
-    // toggle All {{{
-    tdHead["toggle"] = {};
-    tdHead["toggle"]["cell"] = tdHead["row"].insertCell(-1);
-    tdHead["toggle"]["input"] = document.createElement("input");
-    tdHead["toggle"]["input"].setAttribute("type", "checkbox");
-    tdHead["toggle"]["input"].setAttribute("id", "toggleAll");
-    tdHead["toggle"]["input"].setAttribute("class", "toggle");
-    tdHead["toggle"]["input"].setAttribute("name", "toggleAll");
-    tdHead["toggle"]["input"].setAttribute("value", "1");
-
-    tdHead["toggle"]["label"] = document.createElement("label");
-    tdHead["toggle"]["label"].htmlFor = "toggleAll";
-
-    tdHead["toggle"]["cell"].appendChild(tdHead["toggle"]["input"]);
-    tdHead["toggle"]["cell"].appendChild(tdHead["toggle"]["label"]);
-
-    tdHead["toggle"]["input"].checked = savedata["options"]["toggleAll"];
-    tdHead["toggle"]["input"].addEventListener("click", function (){
-        var savedata = JSON.parse(localStorage.getItem("savedata"));
-        savedata["options"]["toggleAll"] = tdHead["toggle"]["input"].checked;
-        localStorage.setItem("savedata", JSON.stringify(savedata));
-        bgPage.currentTabActiveIcon();
-    });
-    // toggle All }}}
 
     var questionLink = [];
-    for(var i=1;i<list_title.length;i++){
+    for(var i=0;i<list_title.length;i++){
         questionLink[i] = {};
         questionLink[i]["cell"] = tdHead["row"].insertCell(-1);
         questionLink[i]["cell"].appendChild(document.createTextNode(list_title[i]));
@@ -182,14 +162,95 @@ function initList(blockList){
         refreshList(blockList);
     });
     // add area }}}
-    // table body }}}
-    refreshList(blockList);
+    // all area {{{
+    var tdAll = {};
+    tdAll["row"] = listTable.insertRow(-1);
+    // cbxAll{{{
+    tdAll["cbxAll"] = {};
+    tdAll["cbxAll"]["cell"] = tdAll["row"].insertCell(-1);
+    tdAll["cbxAll"]["input"] = document.createElement("input");
+    tdAll["cbxAll"]["input"].setAttribute("type", "checkbox");
+    tdAll["cbxAll"]["input"].setAttribute("id", "cbxAll");
+    tdAll["cbxAll"]["input"].setAttribute("name", "cbxAll");
+    tdAll["cbxAll"]["input"].setAttribute("value", "1");
+
+    tdAll["cbxAll"]["cell"].appendChild(tdAll["cbxAll"]["input"]);
+    tdAll["cbxAll"]["input"].addEventListener("click", function (){
+        var cbxList = document.getElementsByClassName("cbxList");
+        for(var i=0;i<cbxList.length;i++){
+            cbxList[i].checked = document.getElementById("cbxAll").checked;
+        }
+    });
+    // cbxAll}}}
+    // toggle All {{{
+    tdAll["toggle"] = {};
+    tdAll["toggle"]["cell"] = tdAll["row"].insertCell(-1);
+    tdAll["toggle"]["input"] = document.createElement("input");
+    tdAll["toggle"]["input"].setAttribute("type", "checkbox");
+    tdAll["toggle"]["input"].setAttribute("id", "toggleAll");
+    tdAll["toggle"]["input"].setAttribute("class", "toggle");
+    tdAll["toggle"]["input"].setAttribute("name", "toggleAll");
+    tdAll["toggle"]["input"].setAttribute("value", "1");
+
+    tdAll["toggle"]["label"] = document.createElement("label");
+    tdAll["toggle"]["label"].htmlFor = "toggleAll";
+
+    tdAll["toggle"]["cell"].appendChild(tdAll["toggle"]["input"]);
+    tdAll["toggle"]["cell"].appendChild(tdAll["toggle"]["label"]);
+
+    tdAll["toggle"]["input"].checked = ((savedata["options"]["flag"] & bgPage.FLAG_ALL.VALID) !=0);
+    tdAll["toggle"]["input"].addEventListener("click", function (){
+        var savedata = JSON.parse(localStorage.getItem("savedata"));
+        //XXX:prototype shift
+        savedata["options"]["flag"] = (savedata["options"]["flag"] & ~bgPage.FLAG_ALL.VALID) | tdAll["toggle"]["input"].checked;
+        localStorage.setItem("savedata", JSON.stringify(savedata));
+        bgPage.currentTabActiveIcon();
+    });
+    // toggle All }}}
+    tdAll["row"].insertCell(-1);
+    tdAll["row"].insertCell(-1).appendChild(document.createTextNode("All"));
+    tdAll["row"].insertCell(-1);
+    // operations {{{
+    tdAll["op"] = {};
+    tdAll["op"]["cell"] = tdAll["row"].insertCell(-1);
+    // trash {{{
+    tdAll["op"]["input"] = document.createElement("input");
+    tdAll["op"]["input"].setAttribute("type", "image");
+    tdAll["op"]["input"].setAttribute("src", "trash.png");
+    tdAll["op"]["input"].setAttribute("id", "delList");
+
+    tdAll["op"]["input"].setAttribute("src", "trash.png");
+    tdAll["op"]["cell"].appendChild(tdAll["op"]["input"]);
+    tdAll["op"]["input"].addEventListener("click", function (){
+        var savedata = JSON.parse(localStorage.getItem("savedata"));
+        var blockList = savedata["blockList"];
+        savedata["options"]["flag"] ^= bgPage.FLAG_ALL.TRASH;
+        if((savedata["options"]["flag"] & bgPage.FLAG_ALL.TRASH) == 0){
+            tdAll["op"]["input"].setAttribute("src", "trash.png");
+            tdAll["row"].setAttribute("style", "color:#000;");
+        }else{
+            tdAll["op"]["input"].setAttribute("src", "back.png");
+            tdAll["row"].setAttribute("style", "color:#ccc;");
+        }
+        for(var i=0;i<blockList.length;i++){
+            blockList[i]["flag"] = (blockList[i]["flag"] & ~bgPage.FLAG_EACH.TRASH) | ((((savedata["options"]["flag"] & bgPage.FLAG_ALL.TRASH) != 0)?1:0) << 1);
+        }
+        localStorage.setItem("savedata", JSON.stringify(savedata));
+        bgPage.blockListUpdate(blockList);
+        refreshList(blockList);
+    });
+    // trash }}}
+    // operations }}}
+// added list }}}
+// all area }}}
+// table body }}}
+refreshList(blockList);
 }
 
 function refreshList(blockList){
     var listTable = document.getElementById("listTable");
-    while(listTable.rows[2]){
-        listTable.deleteRow(2);
+    while(listTable.rows[3]){
+        listTable.deleteRow(3);
     }
     // added list {{{
     var tdList = [];
@@ -257,10 +318,6 @@ function refreshList(blockList){
         tdList[i]["op"]["cell"].appendChild(tdList[i]["op"]["input"]);
         (function (i){
             tdList[i]["op"]["input"].addEventListener("click", function (){
-                /*
-                bgPage.removeBlockEvent(i);
-                blockList.splice(i,1);
-                */
                 var savedata = JSON.parse(localStorage.getItem("savedata"));
                 var blockList = savedata["blockList"];
                 blockList[i]["flag"] ^= bgPage.FLAG_EACH.TRASH;
