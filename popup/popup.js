@@ -46,7 +46,12 @@ function init(details){
     toggleAll["toggle"]["input"].addEventListener("click", function (){
         var savedata = JSON.parse(localStorage.getItem("savedata"));
         //XXX:prototype shift
-        savedata["options"]["flag"] = (savedata["options"]["flag"] & ~bgPage.FLAG_ALL.VALID) | toggleAll["toggle"]["input"].checked;
+        //savedata["options"]["flag"] = (savedata["options"]["flag"] & ~bgPage.FLAG_ALL.VALID) | toggleAll["toggle"]["input"].checked;
+        if(toggleAll["toggle"]["input"].checked){
+            savedata["options"]["flag"] |= bgPage.FLAG_ALL.VALID;
+        }else{
+            savedata["options"]["flag"] &= ~bgPage.FLAG_ALL.VALID;
+        }
         localStorage.setItem("savedata", JSON.stringify(savedata));
         bgPage.currentTabActiveIcon();
     });
@@ -67,10 +72,8 @@ function init(details){
     // toggle All }}}
     // current block toggle{{{
     chrome.tabs.query({active:true, currentWindow:true}, function(e){
-        /*
         var savedata = JSON.parse(localStorage.getItem("savedata"));
         var blockList = savedata["blockList"];
-        */
         if(blockList != null){
             var blockCurrent = {};
             for(var i=0;i<blockList.length;i++){
@@ -121,7 +124,14 @@ function init(details){
                         blockCurrent["input"+i].addEventListener("change", function (){
                             var savedata = JSON.parse(localStorage.getItem("savedata"));
                             var blockList = savedata["blockList"];
-                            blockList[i]["flag"] |= blockCurrent["input"+i].checked;
+                            //blockList[i]["flag"] ^= blockCurrent["input"+i].checked;
+                            //blockList[i]["flag"] = (blockList[i]["flag"] & ~bgPage.FLAG_EACH.VALID) | blockCurrent["input"+i].checked;
+                            if(blockCurrent["input"+i].checked){
+                                blockList[i]["flag"] |= bgPage.FLAG_EACH.VALID;
+                            }else{
+                                blockList[i]["flag"] &= ~bgPage.FLAG_EACH.VALID;
+                            }
+
                             savedata["blockList"] = blockList;
                             localStorage.setItem("savedata", JSON.stringify(savedata));
                             bgPage.toggleBlockEvent(i);

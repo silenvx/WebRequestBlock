@@ -35,6 +35,7 @@ function addBlockEvent(i){
     var blockList = savedata["blockList"];
     if(blockList != null){
         (function (i){
+            console.log(i);
             listEvent[i] = function (details){
                 var savedata= JSON.parse(localStorage.getItem("savedata"));
                 var blockList = savedata["blockList"];
@@ -71,7 +72,7 @@ function addBlockEvent(i){
 // block listから消したとき {{{
 function removeBlockEvent(i){
     chrome.webRequest.onBeforeRequest.removeListener(listEvent[i]);
-    listEvent.splice(i,1);
+    listEvent[i] = null;
     currentTabActiveIcon();
 }
 // block listから消したとき }}}

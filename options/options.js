@@ -210,7 +210,13 @@ function initList(blockList){
     tdAll["toggle"]["input"].addEventListener("click", function (){
         var savedata = JSON.parse(localStorage.getItem("savedata"));
         //XXX:prototype shift
-        savedata["options"]["flag"] = (savedata["options"]["flag"] & ~bgPage.FLAG_ALL.VALID) | tdAll["toggle"]["input"].checked;
+        //savedata["options"]["flag"] = (savedata["options"]["flag"] & ~bgPage.FLAG_ALL.VALID) | tdAll["toggle"]["input"].checked;
+        if(tdAll["toggle"]["input"].checked){
+            savedata["options"]["flag"] |= bgPage.FLAG_ALL.VALID;
+        }else{
+            savedata["options"]["flag"] &= ~bgPage.FLAG_ALL.VALID;
+        }
+        //savedata["options"]["flag"] &= tdAll["toggle"]["input"].checked?~0:~bgPage.FLAG_ALL.VALID;
         localStorage.setItem("savedata", JSON.stringify(savedata));
         bgPage.currentTabActiveIcon();
     });
@@ -241,7 +247,13 @@ function initList(blockList){
             tdAll["row"].setAttribute("style", "color:#ccc;");
         }
         for(var i=0;i<blockList.length;i++){
-            blockList[i]["flag"] = (blockList[i]["flag"] & ~bgPage.FLAG_EACH.TRASH) | ((((savedata["options"]["flag"] & bgPage.FLAG_ALL.TRASH) != 0)?1:0) << 1);
+            //blockList[i]["flag"] = (blockList[i]["flag"] & ~bgPage.FLAG_EACH.TRASH) | ((((savedata["options"]["flag"] & bgPage.FLAG_ALL.TRASH) != 0)?1:0) << 1);
+            //blockList[i]["flag"] = (blockList[i]["flag"] & (savedata["options"]["flag"] & bgPage.FLAG_ALL.TRASH)?bgPage.FLAG_EACH.TRASH:~bgPage.FLAG_EACH.TRASH);
+            if(savedata["options"]["flag"] & bgPage.FLAG_ALL.TRASH){
+                blockList[i]["flag"] |= bgPage.FLAG_EACH.TRASH;
+            }else{
+                blockList[i]["flag"] &= ~bgPage.FLAG_EACH.TRASH;
+            }
         }
         localStorage.setItem("savedata", JSON.stringify(savedata));
         bgPage.blockListUpdate(blockList);
@@ -295,13 +307,17 @@ function refreshList(blockList){
         tdList[i]["toggle"]["cell"].appendChild(tdList[i]["toggle"]["label"]);
 
         tdList[i]["toggle"]["input"].checked = (blockList[i]["flag"] & bgPage.FLAG_EACH.VALID) != 0;
-        (function (i,input){
+        (function (i){
             tdList[i]["toggle"]["input"].addEventListener("click", function (){
-                blockList[i]["flag"] |= input.checked;
+                if(tdList[i]["toggle"]["input"].checked){
+                    blockList[i]["flag"] |= bgPage.FLAG_EACH.VALID;
+                }else{
+                    blockList[i]["flag"] &= ~bgPage.FLAG_EACH.VALID;
+                }
                 bgPage.blockListUpdate(blockList);
                 bgPage.toggleBlockEvent(i);
             });
-        })(i,tdList[i]["toggle"]["input"]);
+        })(i);
         // toggle switch }}}
         tdList[i]["row"].insertCell(-1).appendChild(document.createTextNode(i));
         tdList[i]["row"].insertCell(-1).appendChild(document.createTextNode(blockList[i]["src"]));

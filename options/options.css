@@ -21,6 +21,7 @@ table {
     border-top:solid 1px #ddd;
     border-collapse:collapse;
     width:100%;
+    table-layout:fixed;
 }
 tr {
     border-bottom:solid 1px #ddd;
@@ -28,6 +29,30 @@ tr {
 
 tr:nth-child(2n){
     background-color:#eee;
+}
+
+td {
+    padding:0 0.5em;
+}
+
+td:nth-child(1){
+    width:0;
+}
+
+td:nth-child(2){
+    width:3em;
+}
+
+td:nth-child(3){
+    width:3em;
+}
+
+td:nth-child(4){
+    width:40%;
+}
+
+td:nth-child(5){
+    width:40%;
 }
 
 thead {
