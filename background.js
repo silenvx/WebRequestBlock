@@ -72,7 +72,8 @@ function addBlockEvent(i){
 // block listから消したとき {{{
 function removeBlockEvent(i){
     chrome.webRequest.onBeforeRequest.removeListener(listEvent[i]);
-    listEvent[i] = null;
+    //listEvent[i] = null;
+    listEvent.splice(i,1);
     currentTabActiveIcon();
 }
 // block listから消したとき }}}

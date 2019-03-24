@@ -50,8 +50,15 @@ function init(){
 
         reader.onload = function(e){
             var savedata = JSON.parse(localStorage.getItem("savedata"));
+            /*
             for(var i=0;i<blockList.length;i++){
                 bgPage.removeBlockEvent(i);
+            }
+            */
+            for(var l=blockList.length;0<l;l--){
+                bgPage.removeBlockEvent(0);
+                blockList.splice(0,1);
+                bgPage.blockListUpdate(blockList);
             }
             savedata = JSON.parse(reader.result);
             if((typeof(savedata["name"]) != "undefined") && (savedata["name"] == "WebRequestBlock")){
@@ -247,8 +254,6 @@ function initList(blockList){
             tdAll["row"].setAttribute("style", "color:#ccc;");
         }
         for(var i=0;i<blockList.length;i++){
-            //blockList[i]["flag"] = (blockList[i]["flag"] & ~bgPage.FLAG_EACH.TRASH) | ((((savedata["options"]["flag"] & bgPage.FLAG_ALL.TRASH) != 0)?1:0) << 1);
-            //blockList[i]["flag"] = (blockList[i]["flag"] & (savedata["options"]["flag"] & bgPage.FLAG_ALL.TRASH)?bgPage.FLAG_EACH.TRASH:~bgPage.FLAG_EACH.TRASH);
             if(savedata["options"]["flag"] & bgPage.FLAG_ALL.TRASH){
                 blockList[i]["flag"] |= bgPage.FLAG_EACH.TRASH;
             }else{
@@ -315,7 +320,9 @@ function refreshList(blockList){
                     blockList[i]["flag"] &= ~bgPage.FLAG_EACH.VALID;
                 }
                 bgPage.blockListUpdate(blockList);
+                /*
                 bgPage.toggleBlockEvent(i);
+                */
             });
         })(i);
         // toggle switch }}}
