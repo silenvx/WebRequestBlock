@@ -22,6 +22,7 @@ table {
     border-collapse:collapse;
     width:100%;
     table-layout:fixed;
+    word-break:break-word;
 }
 tr {
     border-bottom:solid 1px #ddd;
@@ -48,14 +49,18 @@ td:nth-child(3){
 }
 
 td:nth-child(4){
-    width:calc(50%-9em);
+    width:calc(calc(100% / 3) - 8em);
 }
 
 td:nth-child(5){
-    width:calc(50%-9em);
+    width:calc(calc(100% / 3) - 8em);
 }
 
 td:nth-child(6){
+    width:calc(calc(100% / 3) - 8em);
+}
+
+td:nth-child(7){
     width:2em;
 }
 
@@ -63,7 +68,7 @@ thead {
     background-color:#eee;
 }
 
-#srcUrl, #destUrl {
+.textarea{
     border:0px;
     width:100%;
 }

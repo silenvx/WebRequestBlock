@@ -1,0 +1,1 @@
+{"options":{"flag":1},"blockList":[{"flag":1,"comment":"youtubeのprofileページでの自動再生強制オフ","src":"https?://www\\.youtube\\.com/(channel|user|)/.*","dest":"*://*.googlevideo.com/*"},{"flag":1,"comment":"atwikiのadblock","src":"https?://www9\\.atwiki\\.jp/.*","dest":"*://cdn.jsdelivr.net/npm/adblock-detect@1.0.5/dist/index.min.js"}],"name":"WebRequestBlock"}

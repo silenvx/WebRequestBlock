@@ -99,16 +99,32 @@ function init(details){
 
                     blockCurrent["num"+i] = blockCurrent["row"+i].insertCell(-1);
                     blockCurrent["numText"+i] = document.createElement("p");
-                    blockCurrent["numText"+i].innerHTML = i;
+                    //blockCurrent["numText"+i].innerHTML = i;
+                    blockCurrent["numText"+i].appendChild(document.createTextNode(i));
                     blockCurrent["num"+i].appendChild(blockCurrent["numText"+i]);
 
                     blockCurrent["description"+i] = blockCurrent["row"+i].insertCell(-1);
                     blockCurrent["text"+i] = document.createElement("p");
                     blockCurrent["text"+i].innerHTML = (function (){
+                        /*
                         if(blockList[i]["dest"].length<48){
                             return blockList[i]["dest"];
                         }else{
                             return blockList[i]["dest"].slice(0,48) + "...";
+                        }
+                        */
+                        if(blockList[i]["comment"] == ""){
+                            if(blockList[i]["dest"].length<48){
+                                return blockList[i]["dest"];
+                            }else{
+                                return blockList[i]["dest"].slice(0,48) + "...";
+                            }
+                        }else{
+                            if(blockList[i]["comment"].length<48){
+                                return blockList[i]["comment"];
+                            }else{
+                                return blockList[i]["comment"].slice(0,48) + "...";
+                            }
                         }
                     })();
                     blockCurrent["text"+i].setAttribute("class", "description");
@@ -134,7 +150,7 @@ function init(details){
 
                             savedata["blockList"] = blockList;
                             localStorage.setItem("savedata", JSON.stringify(savedata));
-                            bgPage.toggleBlockEvent(i);
+                            //bgPage.toggleBlockEvent(i);
                         });
                     })(i);
                 }
