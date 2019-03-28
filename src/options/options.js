@@ -1,4 +1,5 @@
 var bgPage = chrome.extension.getBackgroundPage();
+var dragCurrent = null;
 
 function init(){
     var savedata = JSON.parse(localStorage.getItem("savedata"));
@@ -50,11 +51,6 @@ function init(){
 
         reader.onload = function(e){
             var savedata = JSON.parse(localStorage.getItem("savedata"));
-            /*
-            for(var i=0;i<blockList.length;i++){
-                bgPage.removeBlockEvent(i);
-            }
-            */
             for(var l=blockList.length;0<l;l--){
                 bgPage.removeBlockEvent(0);
                 blockList.splice(0,1);
@@ -212,6 +208,7 @@ function initList(blockList){
     // all area {{{
     var tdAll = {};
     tdAll["row"] = listTable.insertRow(-1);
+    tdAll["row"].setAttribute("id", "tdAll");
     // cbxAll{{{
     tdAll["cbxAll"] = {};
     tdAll["cbxAll"]["cell"] = tdAll["row"].insertCell(-1);
@@ -248,14 +245,11 @@ function initList(blockList){
     tdAll["toggle"]["input"].checked = ((savedata["options"]["flag"] & bgPage.FLAG_ALL.VALID) !=0);
     tdAll["toggle"]["input"].addEventListener("click", function (){
         var savedata = JSON.parse(localStorage.getItem("savedata"));
-        //XXX:prototype shift
-        //savedata["options"]["flag"] = (savedata["options"]["flag"] & ~bgPage.FLAG_ALL.VALID) | tdAll["toggle"]["input"].checked;
         if(tdAll["toggle"]["input"].checked){
             savedata["options"]["flag"] |= bgPage.FLAG_ALL.VALID;
         }else{
             savedata["options"]["flag"] &= ~bgPage.FLAG_ALL.VALID;
         }
-        //savedata["options"]["flag"] &= tdAll["toggle"]["input"].checked?~0:~bgPage.FLAG_ALL.VALID;
         localStorage.setItem("savedata", JSON.stringify(savedata));
         bgPage.currentTabActiveIcon();
     });
@@ -268,22 +262,21 @@ function initList(blockList){
     tdAll["op"] = {};
     tdAll["op"]["cell"] = tdAll["row"].insertCell(-1);
     // trash {{{
-    tdAll["op"]["input"] = document.createElement("input");
-    tdAll["op"]["input"].setAttribute("type", "image");
-    tdAll["op"]["input"].setAttribute("src", "trash.png");
-    tdAll["op"]["input"].setAttribute("id", "delList");
+    tdAll["op"]["trash"] = document.createElement("input");
+    tdAll["op"]["trash"].setAttribute("type", "image");
+    tdAll["op"]["trash"].setAttribute("src", "trash.png");
+    tdAll["op"]["trash"].setAttribute("id", "delList");
 
-    tdAll["op"]["input"].setAttribute("src", "trash.png");
-    tdAll["op"]["cell"].appendChild(tdAll["op"]["input"]);
-    tdAll["op"]["input"].addEventListener("click", function (){
+    tdAll["op"]["cell"].appendChild(tdAll["op"]["trash"]);
+    tdAll["op"]["trash"].addEventListener("click", function (){
         var savedata = JSON.parse(localStorage.getItem("savedata"));
         var blockList = savedata["blockList"];
         savedata["options"]["flag"] ^= bgPage.FLAG_ALL.TRASH;
         if((savedata["options"]["flag"] & bgPage.FLAG_ALL.TRASH) == 0){
-            tdAll["op"]["input"].setAttribute("src", "trash.png");
+            tdAll["op"]["trash"].setAttribute("src", "trash.png");
             tdAll["row"].setAttribute("style", "color:#000;");
         }else{
-            tdAll["op"]["input"].setAttribute("src", "back.png");
+            tdAll["op"]["trash"].setAttribute("src", "back.png");
             tdAll["row"].setAttribute("style", "color:#ccc;");
         }
         for(var i=0;i<blockList.length;i++){
@@ -299,10 +292,9 @@ function initList(blockList){
     });
     // trash }}}
     // operations }}}
-// added list }}}
-// all area }}}
-// table body }}}
-refreshList(blockList);
+    // all area }}}
+    // table body }}}
+    refreshList(blockList);
 }
 
 function refreshList(blockList){
@@ -353,9 +345,6 @@ function refreshList(blockList){
                     blockList[i]["flag"] &= ~bgPage.FLAG_EACH.VALID;
                 }
                 bgPage.blockListUpdate(blockList);
-                /*
-                bgPage.toggleBlockEvent(i);
-                */
             });
         })(i);
         // toggle switch }}}
@@ -380,14 +369,14 @@ function refreshList(blockList){
             });
             tdList[i]["comment"]["cell"].addEventListener("dblclick", function (){
                 tdList[i]["comment"]["p"].setAttribute("style", "display:none;");
-                tdList[i]["comment"]["input"].setAttribute("style", "display:inline;");
+                tdList[i]["comment"]["input"].setAttribute("style", "display:block;");
                 tdList[i]["comment"]["input"].value = blockList[i]["comment"];
                 tdList[i]["comment"]["input"].focus();
                 tdList[i]["comment"]["input"].addEventListener("blur", function(){
                     blockList[i]["comment"] = tdList[i]["comment"]["input"].value;
                     tdList[i]["comment"]["p"].innerHTML = blockList[i]["comment"];
                     bgPage.blockListUpdate(blockList);
-                    tdList[i]["comment"]["p"].setAttribute("style", "display:inline;");
+                    tdList[i]["comment"]["p"].setAttribute("style", "display:block;");
                     tdList[i]["comment"]["input"].setAttribute("style", "display:none;");
                 },{once:true});
             });
@@ -412,25 +401,19 @@ function refreshList(blockList){
             });
             tdList[i]["src"]["cell"].addEventListener("dblclick", function (){
                 tdList[i]["src"]["p"].setAttribute("style", "display:none;");
-                tdList[i]["src"]["input"].setAttribute("style", "display:inline;");
+                tdList[i]["src"]["input"].setAttribute("style", "display:block;");
                 tdList[i]["src"]["input"].value = blockList[i]["src"];
                 tdList[i]["src"]["input"].focus();
                 tdList[i]["src"]["input"].addEventListener("blur", function(){
                     blockList[i]["src"] = tdList[i]["src"]["input"].value;
                     tdList[i]["src"]["p"].innerHTML = blockList[i]["src"];
                     bgPage.blockListUpdate(blockList);
-                    tdList[i]["src"]["p"].setAttribute("style", "display:inline;");
+                    tdList[i]["src"]["p"].setAttribute("style", "display:block;");
                     tdList[i]["src"]["input"].setAttribute("style", "display:none;");
                 },{once:true});
             });
         }(i));
         // src }}}
-        /*
-        tdList[i]["src"] = document.createElement("p");
-        tdList[i]["src"].appendChild(document.createTextNode(blockList[i]["src"]));
-        tdList[i]["row"].insertCell(-1).appendChild(tdList[i]["src"]);
-        */
-
         // dest {{{
         tdList[i]["dest"] = {};
         tdList[i]["dest"]["cell"] = tdList[i]["row"].insertCell(-1);
@@ -450,44 +433,37 @@ function refreshList(blockList){
             });
             tdList[i]["dest"]["cell"].addEventListener("dblclick", function (){
                 tdList[i]["dest"]["p"].setAttribute("style", "display:none;");
-                tdList[i]["dest"]["input"].setAttribute("style", "display:inline;");
+                tdList[i]["dest"]["input"].setAttribute("style", "display:block;");
                 tdList[i]["dest"]["input"].value = blockList[i]["dest"];
                 tdList[i]["dest"]["input"].focus();
                 tdList[i]["dest"]["input"].addEventListener("blur", function(){
                     blockList[i]["dest"] = tdList[i]["dest"]["input"].value;
                     tdList[i]["dest"]["p"].innerHTML = blockList[i]["dest"];
                     bgPage.blockListUpdate(blockList);
-                    tdList[i]["dest"]["p"].setAttribute("style", "display:inline;");
+                    tdList[i]["dest"]["p"].setAttribute("style", "display:block;");
                     tdList[i]["dest"]["input"].setAttribute("style", "display:none;");
                 },{once:true});
             });
         }(i));
         // dest }}}
-        /*
-        tdList[i]["dest"] = document.createElement("p");
-        tdList[i]["dest"].appendChild(document.createTextNode(blockList[i]["dest"]));
-        tdList[i]["row"].insertCell(-1).appendChild(tdList[i]["dest"]);
-        */
         // operations {{{
         tdList[i]["op"] = {};
         tdList[i]["op"]["cell"] = tdList[i]["row"].insertCell(-1);
         // trash {{{
-        tdList[i]["op"]["input"] = document.createElement("input");
-        tdList[i]["op"]["input"].setAttribute("type", "image");
-        tdList[i]["op"]["input"].setAttribute("src", "trash.png");
-        tdList[i]["op"]["input"].setAttribute("id", "delList");
+        tdList[i]["op"]["trash"] = document.createElement("input");
+        tdList[i]["op"]["trash"].setAttribute("type", "image");
+        tdList[i]["op"]["trash"].setAttribute("src", "trash.png");
+        tdList[i]["op"]["trash"].setAttribute("id", "delList");
         if((blockList[i]["flag"] & bgPage.FLAG_EACH.TRASH) == 0){
-            tdList[i]["op"]["input"].setAttribute("src", "trash.png");
+            tdList[i]["op"]["trash"].setAttribute("src", "trash.png");
             tdList[i]["row"].setAttribute("style", "color:#000;");
-            console.log("bla");
         }else{
-            tdList[i]["op"]["input"].setAttribute("src", "back.png");
+            tdList[i]["op"]["trash"].setAttribute("src", "back.png");
             tdList[i]["row"].setAttribute("style", "color:#ccc;");
-            console.log("grey");
         }
-        tdList[i]["op"]["cell"].appendChild(tdList[i]["op"]["input"]);
+        tdList[i]["op"]["cell"].appendChild(tdList[i]["op"]["trash"]);
         (function (i){
-            tdList[i]["op"]["input"].addEventListener("click", function (){
+            tdList[i]["op"]["trash"].addEventListener("click", function (){
                 var savedata = JSON.parse(localStorage.getItem("savedata"));
                 var blockList = savedata["blockList"];
                 blockList[i]["flag"] ^= bgPage.FLAG_EACH.TRASH;
@@ -497,6 +473,63 @@ function refreshList(blockList){
         })(i);
         // trash }}}
         // operations }}}
+        // move {{{
+        tdList[i]["row"].setAttribute("draggable", "true");
+        (function (i){
+            tdList[i]["moveCounter"] = 0;
+            tdList[i]["row"].addEventListener("dragstart", function (e){
+                switch(document.activeElement){
+                    case tdList[i]["comment"]["input"]:
+                    case tdList[i]["src"]["input"]:
+                    case tdList[i]["dest"]["input"]:
+                        e.preventDefault();
+                        break;
+                }
+                dragCurrent =  i;
+            });
+            tdList[i]["row"].addEventListener("dragenter", function (e){
+                tdList[i]["moveCounter"]++;
+                if(i == 0 && dragCurrent != 0){
+                    document.getElementById("tdAll").setAttribute("style", "border-bottom:solid 1px #1768e4;");
+                }else if(i<dragCurrent){
+                    tdList[i-1]["row"].setAttribute("style", "border-bottom:solid 1px #1768e4;");
+                }else if(dragCurrent<i){
+                    tdList[i]["row"].setAttribute("style", "border-bottom:solid 1px #1768e4;");
+                }
+            });
+            tdList[i]["row"].addEventListener("dragleave", function (e){
+                tdList[i]["moveCounter"]--;
+                if(tdList[i]["moveCounter"] === 0){
+                    if(i == 0 && dragCurrent != 0){
+                        document.getElementById("tdAll").setAttribute("style", "border-bottom:solid 1px #ddd;");
+                    }else if(i<dragCurrent){
+                        tdList[i-1]["row"].setAttribute("style", "border-top:solid 1px #ddd;");
+                    }else if(dragCurrent<i){
+                        tdList[i]["row"].setAttribute("style", "border-bottom:solid 1px #ddd;");
+                    }
+                }
+            });
+            tdList[i]["row"].addEventListener("dragover", function (e){
+                e.preventDefault();
+            });
+            tdList[i]["row"].addEventListener("drop", function (e){
+                tdList[i]["moveCounter"] = 0;
+                if(i == 0 && dragCurrent != 0){
+                    document.getElementById("tdAll").setAttribute("style", "border-bottom:solid 1px #ddd;");
+                }else if(i<dragCurrent){
+                    tdList[i-1]["row"].setAttribute("style", "border-top:solid 1px #ddd;");
+                }else if(dragCurrent<i){
+                    tdList[i]["row"].setAttribute("style", "border-bottom:solid 1px #ddd;");
+                }
+
+                bgPage.insertBlockList(i<dragCurrent?i:i+1, dragCurrent);
+
+                var savedata = JSON.parse(localStorage.getItem("savedata"));
+                var blockList = savedata["blockList"];
+                refreshList(blockList);
+            },false);
+        })(i);
+        // move }}}
     }
     // added list }}}
 }

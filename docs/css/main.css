@@ -17,14 +17,13 @@ footer a{
     text-decoration: none;
 }
 
+/*
 table {
     border-top:solid 1px #ddd;
     border-collapse:collapse;
     width:100%;
     table-layout:fixed;
-    word-break:break-word;
 }
-
 tr {
     border-bottom:solid 1px #ddd;
 }
@@ -34,7 +33,7 @@ tr:nth-child(2n){
 }
 
 td {
-    padding:1px 0.5em;
+    padding:0 0.5em;
 }
 
 td:nth-child(1){
@@ -50,18 +49,14 @@ td:nth-child(3){
 }
 
 td:nth-child(4){
-    width:calc(calc(100% / 3) - 8em);
+    width:calc(50%-9em);
 }
 
 td:nth-child(5){
-    width:calc(calc(100% / 3) - 8em);
+    width:calc(50%-9em);
 }
 
 td:nth-child(6){
-    width:calc(calc(100% / 3) - 8em);
-}
-
-td:nth-child(7){
     width:2em;
 }
 
@@ -69,7 +64,7 @@ thead {
     background-color:#eee;
 }
 
-.textarea{
+#srcUrl, #destUrl {
     border:0px;
     width:100%;
 }
@@ -85,9 +80,71 @@ label {
     position: relative;
     display: inline-block;
     transition: 0.3s;
-    /*
     border:solid 1px #4bd865;
-    */
+    border:solid 1px #ddd;
+    margin:0.3em;
+}
+*/
+
+/*
+input:checked + label {
+    border:solid 1px #d9664c;
+}
+label:after {
+    content: '';
+    position: absolute;
+    width: 1em;
+    height: 1em;
+    left: 0;
+    top: 0;
+    z-index: 2;
+    background: #fff;
+    transition: 0.2s;
+    background-color:#4bd865;
+    background-color:#ddd;
+}
+
+input:checked +label:after{
+    left: 1em;
+    background-color: #d9664c;
+}
+*/
+
+#title{
+    padding:1em;
+}
+#configure{
+    margin-left:auto;
+}
+/*
+#saveButton, #loadButton {
+    display:inline-block;
+    padding:1em 2em;
+    margin:0 3px;
+    background-color:#fff;
+    border:solid 1px #1768e4;
+    color:#1768e4;
+}
+#saveButton:hover, #loadButton:hover {
+    background-color:#e1ecfc;
+}
+
+#cbxAll, .cbxList {
+    display:none;
+}
+*/
+
+.toggle{
+    display:none;
+}
+
+label {
+    width: 2em;
+    height: 1em;
+    background: #fff;
+    position: relative;
+    display: inline-block;
+    transition: 0.3s;
     border:solid 1px #ddd;
     margin:0.3em;
 }
@@ -105,9 +162,6 @@ label:after {
     z-index: 2;
     background: #fff;
     transition: 0.2s;
-    /*
-    background-color:#4bd865;
-    */
     background-color:#ddd;
 }
 
@@ -116,13 +170,7 @@ input:checked +label:after{
     background-color: #d9664c;
 }
 
-#title{
-    padding:1em;
-}
-#configure{
-    margin-left:auto;
-}
-#saveButton, #loadButton {
+.button {
     display:inline-block;
     padding:1em 2em;
     margin:0 3px;
@@ -130,10 +178,6 @@ input:checked +label:after{
     border:solid 1px #1768e4;
     color:#1768e4;
 }
-#saveButton:hover, #loadButton:hover {
+.button:hover{
     background-color:#e1ecfc;
-}
-
-#cbxAll, .cbxList {
-    display:none;
 }

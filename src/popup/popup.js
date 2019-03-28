@@ -45,13 +45,12 @@ function init(details){
     toggleAll["toggle"]["input"].checked = ((savedata["options"]["flag"] & bgPage.FLAG_ALL.VALID) !=0);
     toggleAll["toggle"]["input"].addEventListener("click", function (){
         var savedata = JSON.parse(localStorage.getItem("savedata"));
-        //XXX:prototype shift
-        //savedata["options"]["flag"] = (savedata["options"]["flag"] & ~bgPage.FLAG_ALL.VALID) | toggleAll["toggle"]["input"].checked;
         if(toggleAll["toggle"]["input"].checked){
             savedata["options"]["flag"] |= bgPage.FLAG_ALL.VALID;
         }else{
             savedata["options"]["flag"] &= ~bgPage.FLAG_ALL.VALID;
         }
+        toggleAll["text"].innerHTML = "WebRequestBlockを" + (toggleAll["toggle"]["input"].checked?"無効":"有効") + "にする";
         localStorage.setItem("savedata", JSON.stringify(savedata));
         bgPage.currentTabActiveIcon();
     });
@@ -65,7 +64,6 @@ function init(details){
     toggleAll["description"] = toggleAll["row"].insertCell(-1);
     toggleAll["text"] = document.createElement("p");
     toggleAll["text"].innerHTML = "WebRequestBlockを" + (toggleAll["toggle"]["input"].checked?"無効":"有効") + "にする";
-    //toggleAll["text"].innerHTML = "WebRequestBlockを" + toggleAll["toggle"]["input"].checked?"無効":"有効" + "にする";
     toggleAll["text"].setAttribute("class", "description");
     toggleAll["description"].appendChild(toggleAll["text"]);
     toggleAll["description"].addEventListener("click", toggleAll["click"]);
@@ -99,20 +97,12 @@ function init(details){
 
                     blockCurrent["num"+i] = blockCurrent["row"+i].insertCell(-1);
                     blockCurrent["numText"+i] = document.createElement("p");
-                    //blockCurrent["numText"+i].innerHTML = i;
                     blockCurrent["numText"+i].appendChild(document.createTextNode(i));
                     blockCurrent["num"+i].appendChild(blockCurrent["numText"+i]);
 
                     blockCurrent["description"+i] = blockCurrent["row"+i].insertCell(-1);
                     blockCurrent["text"+i] = document.createElement("p");
                     blockCurrent["text"+i].innerHTML = (function (){
-                        /*
-                        if(blockList[i]["dest"].length<48){
-                            return blockList[i]["dest"];
-                        }else{
-                            return blockList[i]["dest"].slice(0,48) + "...";
-                        }
-                        */
                         if(blockList[i]["comment"] == ""){
                             if(blockList[i]["dest"].length<48){
                                 return blockList[i]["dest"];
@@ -140,8 +130,6 @@ function init(details){
                         blockCurrent["input"+i].addEventListener("change", function (){
                             var savedata = JSON.parse(localStorage.getItem("savedata"));
                             var blockList = savedata["blockList"];
-                            //blockList[i]["flag"] ^= blockCurrent["input"+i].checked;
-                            //blockList[i]["flag"] = (blockList[i]["flag"] & ~bgPage.FLAG_EACH.VALID) | blockCurrent["input"+i].checked;
                             if(blockCurrent["input"+i].checked){
                                 blockList[i]["flag"] |= bgPage.FLAG_EACH.VALID;
                             }else{
@@ -150,7 +138,7 @@ function init(details){
 
                             savedata["blockList"] = blockList;
                             localStorage.setItem("savedata", JSON.stringify(savedata));
-                            //bgPage.toggleBlockEvent(i);
+                            bgPage.currentTabActiveIcon();
                         });
                     })(i);
                 }

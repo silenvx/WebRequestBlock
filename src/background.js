@@ -35,7 +35,6 @@ function addBlockEvent(i){
     var blockList = savedata["blockList"];
     if(blockList != null){
         (function (i){
-            console.log(i);
             listEvent[i] = function (details){
                 var savedata= JSON.parse(localStorage.getItem("savedata"));
                 var blockList = savedata["blockList"];
@@ -72,17 +71,27 @@ function addBlockEvent(i){
 // block listから消したとき {{{
 function removeBlockEvent(i){
     chrome.webRequest.onBeforeRequest.removeListener(listEvent[i]);
-    //listEvent[i] = null;
     listEvent.splice(i,1);
     currentTabActiveIcon();
 }
 // block listから消したとき }}}
-// toggleで有効/無効を変えたとき {{{
-function toggleBlockEvent(i){
-    removeBlockEvent(i);
-    addBlockEvent(i);
+// 入れ替え{{{
+function insertBlockList(x, y){
+    var savedata = JSON.parse(localStorage.getItem("savedata"));
+    var blockList = savedata["blockList"];
+
+    for(;listEvent.length;){
+        removeBlockEvent(0);
+    }
+
+    blockList.splice(x, 0, blockList[y]);
+    blockList.splice(x<y?y+1:y,1);
+
+    blockListUpdate(blockList);
+    init();
+    currentTabActiveIcon();
 }
-// toggleで有効/無効を変えたとき }}}
+// 入れ替え}}}
 // get info tabs[tabId] {{{
 var tabs = {};
 chrome.tabs.query({}, function(results) {
@@ -113,7 +122,7 @@ function currentTabActiveIcon(){
         for(var j=0;j<tabsActive.length;j++){
             var fBlock = false;
             var savedata = JSON.parse(localStorage.getItem("savedata"));
-            if(savedata["options"]["toggleAll"] == true){
+            if(savedata["options"]["flag"] & FLAG_ALL.VALID != 0){
                 var blockList = savedata["blockList"];
                 if(blockList != null){
                     for(var i=0;i<blockList.length;i++){

@@ -1,0 +1,145 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <link type="text/css" rel="stylesheet" href="css/main.css">
+        <title>WebRequestBlock - ヘルプ</title>
+    </head>
+    <body>
+        <div id="container">
+            <header>
+                <div id="title">
+                    Web Request Block
+                </div>
+            </header>
+            <div id="nav">
+            </div>
+            <div id="main">
+                <h1>目次</h1>
+                <ol>
+                    <li>
+                    <h2><a href="#n1-0">WebRequestBlockとは？</a></h2>
+                        <ol>
+                            <li><h3><a href="#n1-1">概要</a></h3></li>
+                            <li><h3><a href="#n1-2">Download</a></h3></li>
+                        </ol>
+                    </li>
+                    <li>
+                    <h2><a href="#n2-0">使い方</a></h2>
+                    <ol>
+                        <li><h3><a href="#n2-1">設定画面を開く</a></h3></li>
+                        <li><h3><a href="#n2-2">ブロックするURLを追加する</a></h3></li>
+                        <li><h3><a href="#n2-3">ブロックするURLを削除する</a></h3></li>
+                        <li><h3><a href="#n2-4">ブロックするURLを編集する</a></h3></li>
+                        <li><h3><a href="#n2-5">ブロックするURLを有効/無効にする</a></h3></li>
+                        <li><h3><a href="#n2-6">ブロックするURLを並び替えする</a></h3></li>
+                        <li><h3><a href="#n2-7">外部ファイルに設定を保存する</a></h3></li>
+                        <li><h3><a href="#n2-8">外部ファイルの設定を読込する</a></h3></li>
+                    </ol>
+                    </li>
+                    <li>
+                    <h2><a href="#n3-0">問い合わせ先</a></h2>
+                    </li>
+                </ol>
+                <hr>
+                <ol>
+                    <li>
+                    <h2 id="n1-0">WebRequestBlockとは？</h2>
+                    <ol>
+                        <li><h3 id="n1-1">概要</h3>
+                        <p>指定したサイトからの特定のURLのリクエストをブロックする拡張機能です</p>
+                        </li>
+                        <li><h3 id="n1-2">Download</h3>
+                        <p>
+                        github:<a href="https://github.com/silenvx/WebRequestBlock">https://github.com/silenvx/WebRequestBlock</a><br>
+                        firefox:<a href="https://addons.mozilla.org/ja/firefox/addon/webrequestblock/">https://addons.mozilla.org/ja/firefox/addon/webrequestblock/</a><br>
+                        chrome:準備中
+                        </p></li>
+                    </ol>
+                    </li>
+                    <li>
+                    <h2 id="n2-0">使い方</h2>
+                    <ol>
+                        <li>
+                        <h3 id="n2-1">設定画面を開く</h3>
+                        <p>
+                        <img src="img/48x48.png" alt="browser action" height="24px">
+                        をクリックし、設定を開く
+                        </p>
+                        </li>
+                        <li>
+                        <h3 id="n2-2">ブロックするURLを追加する</h3>
+                        <p>コメントは、省略可能です。その場合はpopupで表示されるのが拒否するURLになります<br>
+                        <br>
+                        対象のURLは、ブロックを動作させたいサイトのURLを入力します<br>
+                        記入方法は<a href="https://developer.mozilla.org/ja/docs/Web/JavaScript/Guide/Regular_Expressions">正規表現</a>です。全てのサイトに対応させる場合は<strong>.*</strong>と入力<br>
+                        <br>
+                        拒否するURLは、ブロックしたいリクエスト自体のURLを入力します<br>
+                        記入方法は<a href="https://developer.mozilla.org/ja/docs/Mozilla/Add-ons/WebExtensions/Match_patterns">WebExtensionsのマッチパターン</a>です<br>
+                        </p>
+                        </li>
+                        <li>
+                        <h3 id="n2-3">ブロックするURLを削除する</h3>
+                        <p>
+                        Allの
+                        <img src="img/trash.png" alt="ゴミ箱">
+                        を押すと全て削除<br>
+                        個別の
+                        <img src="img/trash.png" alt="ゴミ箱">
+                        でそれぞれを削除できます<br>
+                        もう一度押すことで取り消しが可能です<br>
+                        再度設定画面を開くことで完全に削除されます<br>
+                        </p>
+                        </li>
+                        <li>
+                        <h3 id="n2-4">ブロックするURLを編集する</h3>
+                        <p>
+                        編集したい項目をダブルクリックすることで編集が可能になります<br>
+                        </p>
+                        </li>
+                        <li>
+                        <h3 id="n2-5">ブロックするURLを有効/無効にする</h3>
+                        <p>
+                        設定画面、もしくはpopupにて
+                        <input type="checkbox" id="toggle" class="toggle" value="1">
+                        <label for="toggle">
+                        </label>
+                        をクリックすることによって切替可能<br>
+                        赤色がブロック状態です<br>
+                        </p>
+                        </li>
+                        <li>
+                        <h3 id="n2-6">ブロックするURLを並び替えする</h3>
+                        <p>
+                        D&amp;Dをすることによって並び替えできます<br>
+                        </p>
+                        </li>
+                        <li>
+                        <h3 id="n2-7">外部ファイルに設定を保存する</h3>
+                        <p>
+                        設定画面の右上の
+                        <div class="button">保存</div>
+                        で可能です
+                        </p>
+                        </li>
+                        <li>
+                        <h3 id="n2-8">外部ファイルの設定を読込する</h3>
+                        <p>
+                        設定画面の右上の
+                        <div class="button">読込</div>
+                        で可能です
+                        </p>
+                        </li>
+                    </ol>
+                    <li>
+                    <h2 id="n3-0">問い合わせ先</h2>
+                    Twitter:<a href="https://twitter.com/silenvx">silenvx</a>
+                    </li>
+                </ol>
+            </div>
+        </div>
+        <footer>
+            <a href="http://amzn.asia/g5IDwcs" target="_blank">donate</a>
+        </footer>
+    </body>
+</html>
