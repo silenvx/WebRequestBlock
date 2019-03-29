@@ -478,6 +478,10 @@ function refreshList(blockList){
         (function (i){
             tdList[i]["moveCounter"] = 0;
             tdList[i]["row"].addEventListener("dragstart", function (e){
+
+                //XXX:need for firefox
+                e.dataTransfer.setData("text", this.id);
+
                 switch(document.activeElement){
                     case tdList[i]["comment"]["input"]:
                     case tdList[i]["src"]["input"]:
