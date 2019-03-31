@@ -477,6 +477,24 @@ function refreshList(blockList){
         tdList[i]["row"].setAttribute("draggable", "true");
         (function (i){
             tdList[i]["moveCounter"] = 0;
+            tdList[i]["comment"]["input"].addEventListener("focus", function (e){
+                tdList[i]["row"].setAttribute("draggable", "false");
+            });
+            tdList[i]["comment"]["input"].addEventListener("blur", function (e){
+                tdList[i]["row"].setAttribute("draggable", "true");
+            });
+            tdList[i]["src"]["input"].addEventListener("focus", function (e){
+                tdList[i]["row"].setAttribute("draggable", "false");
+            });
+            tdList[i]["src"]["input"].addEventListener("blur", function (e){
+                tdList[i]["row"].setAttribute("draggable", "true");
+            });
+            tdList[i]["dest"]["input"].addEventListener("focus", function (e){
+                tdList[i]["row"].setAttribute("draggable", "false");
+            });
+            tdList[i]["dest"]["input"].addEventListener("blur", function (e){
+                tdList[i]["row"].setAttribute("draggable", "true");
+            });
             tdList[i]["row"].addEventListener("dragstart", function (e){
 
                 //XXX:need for firefox
