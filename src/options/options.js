@@ -51,25 +51,31 @@ function init(){
 
         reader.onload = function(e){
             var savedata = JSON.parse(localStorage.getItem("savedata"));
-            for(var l=blockList.length;0<l;l--){
-                bgPage.removeBlockEvent(0);
-                blockList.splice(0,1);
-                bgPage.blockListUpdate(blockList);
-            }
-            savedata = JSON.parse(reader.result);
-            if((typeof(savedata["name"]) != "undefined") && (savedata["name"] == "WebRequestBlock")){
-                blockList = savedata["blockList"]
-                localStorage.setItem("savedata", JSON.stringify(savedata));
-                bgPage.init();
-                refreshList(blockList);
-            }else{
+            if(isJson(reader.result)){
+                savedata = JSON.parse(reader.result);
+                if((typeof(savedata["name"]) != "undefined") && (savedata["name"] == "WebRequestBlock")){
+                    for(var l=blockList.length;0<l;l--){
+                        bgPage.removeBlockEvent(0);
+                        blockList.splice(0,1);
+                        bgPage.blockListUpdate(blockList);
+                    }
+                    blockList = savedata["blockList"]
+                    localStorage.setItem("savedata", JSON.stringify(savedata));
+                    bgPage.init();
+                    refreshList(blockList);
+                    bgPage.blockListUpdate(blockList);
+                }else{
+                    /*
                 savedata = JSON.parse(localStorage.getItem("savedata"));
                 blockList = savedata["blockList"]
                 bgPage.init();
                 refreshList(blockList);
-                console.log("load file error");
+                */
+                    window.alert("読込ファイルが正しくありません");
+                }
+            }else{
+                window.alert("読込ファイルが正しくありません");
             }
-            bgPage.blockListUpdate(blockList);
         }
     });
     var loadElement= document.createElement("div");
@@ -175,18 +181,32 @@ function initList(blockList){
     tdAdd["add"]["input"].setAttribute("id", "addList");
     tdAdd["add"]["cell"].appendChild(tdAdd["add"]["input"]);
     tdAdd["add"]["input"].addEventListener("click", function (){
-        var savedata = JSON.parse(localStorage.getItem("savedata"));
-        var blockList = savedata["blockList"];
-        var comment = document.getElementById("comment").value;
-        var src = document.getElementById("srcUrl").value;
-        var dest = document.getElementById("destUrl").value;
-        document.getElementById("comment").value = "";
-        document.getElementById("srcUrl").value = "";
-        document.getElementById("destUrl").value = "";
-        blockList.unshift({flag:bgPage.FLAG_EACH.VALID, comment:comment, src:src, dest:dest})
-        bgPage.blockListUpdate(blockList);
-        bgPage.addBlockEvent(blockList.length-1);
-        refreshList(blockList);
+        var noProblemFlag = true;
+        if(document.getElementById("srcUrl").value == ""){
+            if(window.confirm("対象のURLが空白です\n全てのサイトを対象にしますか？")){
+                document.getElementById("srcUrl").value = ".*";
+            }else{
+                noProblemFlag = false;
+            }
+        }
+        if(document.getElementById("destUrl").value == ""){
+            window.alert("拒否するURLが空白です");
+            noProblemFlag = false;
+        }
+        if(noProblemFlag){
+            var savedata = JSON.parse(localStorage.getItem("savedata"));
+            var blockList = savedata["blockList"];
+            var comment = document.getElementById("comment").value;
+            var src = document.getElementById("srcUrl").value;
+            var dest = document.getElementById("destUrl").value;
+            document.getElementById("comment").value = "";
+            document.getElementById("srcUrl").value = "";
+            document.getElementById("destUrl").value = "";
+            blockList.unshift({flag:bgPage.FLAG_EACH.VALID, comment:comment, src:src, dest:dest})
+            bgPage.blockListUpdate(blockList);
+            bgPage.addBlockEvent(blockList.length-1);
+            refreshList(blockList);
+        }
     });
     tdAdd["comment"]["input"].addEventListener("keydown", function (e){
         if(e.keyCode === 13){
@@ -554,6 +574,15 @@ function refreshList(blockList){
         // move }}}
     }
     // added list }}}
+}
+
+function isJson(str){
+    try{
+        JSON.parse(str);
+    }catch(e){
+        return false;
+    }
+    return true;
 }
 
 document.addEventListener("DOMContentLoaded", init, false);
